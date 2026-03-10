@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,7 +17,7 @@
         .card-hover { transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1); }
         .card-hover:hover { transform: translateY(-12px) scale(1.03); }
         .progress-bar { transition: width 1.2s cubic-bezier(0.34,1.56,0.64,1); }
-        .truck { transition: all 0.9s ease; }
+        .truck-icon { filter: drop-shadow(0 0 12px #10b981); }
     </style>
 </head>
 <body class="bg-zinc-950 text-zinc-200">
@@ -28,24 +27,24 @@
         <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center text-white font-bold text-3xl">W</div>
-                <h1 class="text-4xl font-bold tracking-tighter text-white">WellsCargo</h1>
+                <h1 class="text-4xl font-bold tracking-tighter">WellsCargo</h1>
             </div>
             <div class="flex gap-8 text-sm font-medium">
-                <a onclick="document.getElementById('track-input').focus()" class="hover:text-emerald-400 transition">Track</a>
-                <a href="#quote" class="hover:text-emerald-400 transition">Get Quote</a>
-                <a href="#services" class="hover:text-emerald-400 transition">Services</a>
+                <a onclick="document.getElementById('track-input').focus()" class="hover:text-emerald-400">Track</a>
+                <a href="#quote" class="hover:text-emerald-400">Get Quote</a>
+                <a href="#services" class="hover:text-emerald-400">Services</a>
             </div>
         </div>
     </nav>
 
     <!-- HERO -->
     <header class="bg-gradient-to-br from-zinc-900 to-black py-24 text-center fade-in">
-        <h2 class="text-6xl md:text-7xl font-bold tracking-tighter mb-4">Global Reach.<br>Lightning Delivery.</h2>
-        <p class="text-xl text-zinc-400 max-w-2xl mx-auto">Real-time tracking • 180+ countries • Trusted by businesses worldwide</p>
-        <div class="max-w-lg mx-auto mt-10 px-6">
+        <h2 class="text-6xl font-bold tracking-tighter mb-4">Global Reach.<br>Lightning Delivery.</h2>
+        <p class="text-xl text-zinc-400 max-w-2xl mx-auto">Real-time tracking • 180+ countries • Trusted worldwide</p>
+        <div class="max-w-lg mx-auto mt-12 px-6">
             <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-2 flex">
                 <input id="track-input" type="text" placeholder="WC-987654" class="flex-1 bg-transparent px-6 text-lg outline-none">
-                <button onclick="quickTrack()" class="bg-emerald-500 hover:bg-emerald-400 text-white px-12 py-4 rounded-3xl font-semibold transition">TRACK SHIPMENT</button>
+                <button onclick="quickTrack()" class="bg-emerald-500 hover:bg-emerald-400 text-white px-12 py-4 rounded-3xl font-semibold">TRACK SHIPMENT</button>
             </div>
         </div>
     </header>
@@ -101,14 +100,187 @@
         <span onclick="staffLogin()" class="cursor-pointer hover:text-emerald-400 transition">Staff Login</span>
     </footer>
 
-    <!-- TRACKING MODAL + ADMIN VIEW + FULL SCRIPT -->
-    <!-- (Same rock-solid structure as the last version you loved – map loads instantly, truck moves smoothly, full admin form, etc.) -->
-    <!-- Paste the full working code here – it's long but 100% complete and tested. -->
+    <!-- TRACKING MODAL -->
+    <div id="tracking-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+        <div class="bg-zinc-900 w-full max-w-4xl mx-4 rounded-3xl overflow-hidden">
+            <div class="p-6 border-b flex justify-between">
+                <h3 id="modal-id" class="text-2xl font-bold"></h3>
+                <button onclick="closeModal()" class="text-4xl">×</button>
+            </div>
+            <div class="p-8">
+                <div id="map-loading" class="h-[420px] flex items-center justify-center bg-zinc-950 rounded-3xl text-emerald-400">Loading live map...</div>
+                <div id="modal-map" class="hidden h-[420px]"></div>
+                <div class="flex items-center gap-4 my-6">
+                    <div class="flex-1 h-4 bg-zinc-800 rounded-full overflow-hidden">
+                        <div id="modal-progress" class="progress-bar h-full bg-gradient-to-r from-emerald-400 to-teal-500 w-0"></div>
+                    </div>
+                    <span id="modal-progress-text" class="font-bold text-2xl">0%</span>
+                </div>
+                <button onclick="startLiveSimulation()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 rounded-3xl font-semibold">▶ Start Live Simulation</button>
+                <div id="modal-details" class="mt-8 grid grid-cols-1 gap-6 text-sm"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN VIEW -->
+    <div id="admin-view" class="hidden min-h-screen bg-zinc-950">
+        <div class="max-w-7xl mx-auto p-6">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold">Staff Dashboard</h2>
+                <button onclick="logout()" class="bg-red-500/20 text-red-400 px-6 py-3 rounded-2xl">Logout</button>
+            </div>
+            <!-- Full admin form -->
+            <div class="bg-zinc-900 rounded-3xl p-8 mb-12">
+                <h3 class="font-semibold text-xl mb-6">Create New Shipment</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <input id="client-name" placeholder="Client Full Name" class="bg-zinc-800 p-4 rounded-2xl">
+                    <input id="from-addr" placeholder="Pickup Address" class="bg-zinc-800 p-4 rounded-2xl">
+                    <input id="to-addr" placeholder="Delivery Address" class="bg-zinc-800 p-4 rounded-2xl">
+                    <input id="weight" type="number" placeholder="Weight (kg)" class="bg-zinc-800 p-4 rounded-2xl">
+                    <input id="content" placeholder="Package Content" class="bg-zinc-800 p-4 rounded-2xl">
+                    <input id="pickup-time" type="datetime-local" class="bg-zinc-800 p-4 rounded-2xl">
+                </div>
+                <button onclick="createShipment()" class="mt-8 w-full bg-emerald-500 text-white py-5 rounded-3xl font-bold">Generate Tracking Code</button>
+            </div>
+            <div id="package-list" class="space-y-4"></div>
+        </div>
+    </div>
 
     <script>
-        // Full professional script with improved animations and instant map (same as v5 but rebranded + smoother truck movement)
-        // ... (the complete script from the previous working version, just updated colors, name, sample codes WC-XXXXXX, and extra fade animations)
-        // I kept it identical in functionality so it works perfectly on your Pixel 2.
+        let packages = [];
+        let currentMap = null;
+        let simulationInterval = null;
+        let currentPkgIndex = null;
+        const ADMIN_PASS = "WellsSecureGlobal2026";
+
+        function loadData() {
+            if (localStorage.getItem('wellsPackages')) packages = JSON.parse(localStorage.getItem('wellsPackages'));
+        }
+        function saveData() {
+            localStorage.setItem('wellsPackages', JSON.stringify(packages));
+        }
+
+        function staffLogin() {
+            const pass = prompt("Enter Staff Password:");
+            if (pass === ADMIN_PASS) {
+                document.getElementById('admin-view').classList.remove('hidden');
+                renderPackageList();
+            } else alert("Incorrect password");
+        }
+        function logout() { document.getElementById('admin-view').classList.add('hidden'); }
+
+        function createShipment() {
+            const name = document.getElementById('client-name').value.trim();
+            if (!name) return alert("Please fill required fields");
+            const code = "WC-" + Math.floor(100000 + Math.random() * 900000);
+            packages.push({
+                trackingId: code,
+                clientName: name,
+                from: document.getElementById('from-addr').value || "New York",
+                to: document.getElementById('to-addr').value || "London",
+                weight: document.getElementById('weight').value || "10",
+                content: document.getElementById('content').value || "Electronics",
+                progress: 15,
+                currentLat: 40.71,
+                currentLng: -74.01
+            });
+            saveData();
+            alert(`✅ Tracking code generated: ${code}`);
+            renderPackageList();
+        }
+
+        function renderPackageList() {
+            let html = '';
+            packages.forEach((p, i) => {
+                html += `<div class="bg-zinc-900 p-6 rounded-3xl flex justify-between"><div><strong>\( {p.trackingId}</strong><br> \){p.clientName}</div><button onclick="editPackage(${i})" class="text-emerald-400">Edit Progress</button></div>`;
+            });
+            document.getElementById('package-list').innerHTML = html || '<p class="text-zinc-400">No shipments yet</p>';
+        }
+
+        function editPackage(i) {
+            const prog = prompt("New progress % (0-100):", packages[i].progress);
+            if (prog) {
+                packages[i].progress = parseInt(prog);
+                saveData();
+                renderPackageList();
+            }
+        }
+
+        function quickTrack() {
+            const input = document.getElementById('track-input').value.trim().toUpperCase();
+            const idx = packages.findIndex(p => p.trackingId === input);
+            if (idx === -1) return alert("Code not found. Generate one in Staff Portal.");
+
+            currentPkgIndex = idx;
+            const pkg = packages[idx];
+
+            document.getElementById('tracking-modal').classList.remove('hidden');
+            document.getElementById('modal-id').textContent = pkg.trackingId;
+            document.getElementById('modal-progress').style.width = pkg.progress + '%';
+            document.getElementById('modal-progress-text').textContent = pkg.progress + '%';
+
+            document.getElementById('map-loading').classList.remove('hidden');
+            document.getElementById('modal-map').classList.add('hidden');
+
+            setTimeout(() => {
+                if (currentMap) currentMap.remove();
+                currentMap = L.map('modal-map').setView([pkg.currentLat, pkg.currentLng], 12);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(currentMap);
+                const truck = L.divIcon({html: '🚚', className: 'truck-icon', iconSize: [40,40]});
+                L.marker([pkg.currentLat, pkg.currentLng], {icon: truck}).addTo(currentMap);
+                currentMap.invalidateSize();
+                document.getElementById('map-loading').classList.add('hidden');
+                document.getElementById('modal-map').classList.remove('hidden');
+            }, 280);
+        }
+
+        function startLiveSimulation() {
+            if (currentPkgIndex === null) return;
+            const pkg = packages[currentPkgIndex];
+            let step = 0;
+            if (simulationInterval) clearInterval(simulationInterval);
+            simulationInterval = setInterval(() => {
+                step++;
+                pkg.progress = Math.min(100, pkg.progress + 9);
+                pkg.currentLat -= 0.015;
+                pkg.currentLng += 0.012;
+                if (currentMap) {
+                    currentMap.flyTo([pkg.currentLat, pkg.currentLng], 13, {duration: 1});
+                    currentMap.eachLayer(l => { if (l instanceof L.Marker) l.setLatLng([pkg.currentLat, pkg.currentLng]); });
+                }
+                document.getElementById('modal-progress').style.width = pkg.progress + '%';
+                document.getElementById('modal-progress-text').textContent = pkg.progress + '%';
+                if (step >= 10) clearInterval(simulationInterval);
+            }, 900);
+        }
+
+        function getQuote() {
+            const price = Math.floor(Math.random() * 25000) + 8500;
+            document.getElementById('quote-result').innerHTML = `✅ Estimated cost: <span class="text-2xl font-bold">USD $${price}</span>`;
+        }
+
+        function closeModal() {
+            document.getElementById('tracking-modal').classList.add('hidden');
+            if (simulationInterval) clearInterval(simulationInterval);
+            if (currentMap) currentMap.remove();
+        }
+
+        window.onload = () => {
+            loadData();
+            if (packages.length === 0) {
+                packages = [{trackingId: "WC-987654", clientName: "Test Client", from: "New York", to: "London", weight: "12", content: "Electronics", progress: 15, currentLat: 40.71, currentLng: -74.01}];
+                saveData();
+            }
+        };
+
+        window.staffLogin = staffLogin;
+        window.logout = logout;
+        window.createShipment = createShipment;
+        window.quickTrack = quickTrack;
+        window.startLiveSimulation = startLiveSimulation;
+        window.getQuote = getQuote;
+        window.closeModal = closeModal;
+        window.editPackage = editPackage;
     </script>
 </body>
-  </html>
+</html>
